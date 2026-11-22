@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Ride AI",
+    "slug": "ride-ai-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0f0f13"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Ride AI uses speech recognition so you can book rides using your voice.",
+        "NSMicrophoneUsageDescription": "Ride AI needs microphone access for voice commands.",
+        "NSLocationWhenInUseUsageDescription": "Ride AI uses your location to find nearby drivers."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0f13"
+      },
+      "permissions": [
+        "RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-speech"
+    ]
+  }
+}
