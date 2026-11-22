@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ride AI — Video Walkthrough</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f13;--surface:#1a1a24;--surface2:#22223a;
+  --border:#2e2e45;--text:#f0f0f5;--muted:#8888aa;
+  --accent:#6c63ff;--accent2:#ff6584;--green:#22c55e;--yellow:#f59e0b;
+}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:60px 20px 40px;background:linear-gradient(180deg,#13101f 0%,var(--bg) 100%)}
+.hero-tag{display:inline-block;background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.4);border-radius:999px;padding:5px 16px;font-size:12px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-size:clamp(36px,7vw,72px);font-weight:800;line-height:1.05;margin-bottom:14px}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:18px;color:var(--muted);max-width:560px;margin:0 auto 30px;line-height:1.6}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:#5a52e0;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px 28px;font-size:15px;cursor:pointer;transition:all .2s}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── PLAYER ── */
+.player-wrap{max-width:900px;margin:0 auto;padding:0 20px 60px}
+.player{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:24px}
+.player-screen{position:relative;background:#000;aspect-ratio:16/9;overflow:hidden;cursor:pointer}
+.scene{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;animation:fadeIn .5s ease}
+.scene.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* phone mockup */
+.phone{width:200px;height:380px;background:var(--surface);border-radius:30px;border:3px solid var(--border);overflow:hidden;position:relative;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.phone-notch{width:60px;height:14px;background:#000;border-radius:0 0 10px 10px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10}
+.phone-content{height:100%;overflow:hidden;padding-top:20px}
+.phone-screen{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:10px}
+
+/* scene text */
+.scene-info{flex:1;padding:0 30px;max-width:400px}
+.scene-num{font-size:11px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.scene-title{font-size:28px;font-weight:800;line-height:1.2;margin-bottom:10px}
+.scene-desc{font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.scene-quote{background:rgba(108,99,255,.12);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 8px 8px 0;font-size:14px;color:var(--text);font-style:italic;margin-bottom:12px}
+
+/* progress */
+.progress-bar{height:4px;background:var(--border);position:relative}
+.progress-fill{height:100%;background:var(--accent);transition:width .4s ease}
+
+/* controls */
+.controls{display:flex;align-items:center;gap:14px;padding:14px 20px}
+.ctrl-btn{width:40px;height:40px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ctrl-btn.play-pause{width:48px;height:48px;background:var(--accent);border-color:var(--accent);font-size:18px}
+.ctrl-btn.play-pause:hover{background:#5a52e0}
+.time-display{font-size:13px;color:var(--muted);min-width:80px}
+.scene-counter{font-size:13px;color:var(--muted);margin-left:auto}
+
+/* scene indicators */
+.scene-dots{display:flex;gap:6px;padding:0 20px 16px}
+.scene-dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .2s}
+.scene-dot.active{background:var(--accent);width:24px;border-radius:4px}
+.scene-dot:hover{background:var(--muted)}
+
+/* phone UI elements */
+.pmic{width:60px;height:60px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;animation:micPulse 1.5s infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,.5)}50%{box-shadow:0 0 0 12px rgba(108,99,255,0)}}
+.pai-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:10px;color:var(--text);max-width:160px;line-height:1.4;position:relative}
+.pai-bubble::before{content:"🤖";margin-right:4px}
+.pvehicle{width:100%;background:var(--surface2);border:2px solid var(--accent);border-radius:10px;padding:8px;display:flex;align-items:center;gap:8px;font-size:11px}
+.pdriver{width:100%;background:var(--surface2);border-radius:10px;padding:8px;display:flex;align-items:center;gap:8px}
+.peta{background:rgba(108,99,255,.2);border:1px solid var(--accent);border-radius:8px;padding:6px 10px;font-size:18px;font-weight:800;color:var(--accent);text-align:center}
+.pmap{width:100%;height:70px;background:#1a2030;border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pmap-car{position:absolute;font-size:16px;animation:pcar 2s linear infinite}
+@keyframes pcar{0%{left:10%}100%{left:80%}}
+.prating{display:flex;gap:4px;font-size:20px}
+.pstep{width:100%;background:var(--surface2);border-radius:8px;padding:6px 10px;font-size:10px;display:flex;align-items:center;gap:6px}
+.pdot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+/* ── SCRIPT ── */
+.script-section{max-width:900px;margin:0 auto;padding:0 20px 60px}
+.section-title{font-size:22px;font-weight:700;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.script-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.script-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background .15s}
+.script-header:hover{background:var(--surface2)}
+.script-num{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.script-stitle{font-size:15px;font-weight:600;flex:1}
+.script-dur{font-size:12px;color:var(--muted)}
+.script-body{padding:0 18px 16px;font-size:14px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border)}
+.narration{background:rgba(108,99,255,.08);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:12px;font-style:italic;color:var(--text);font-size:13px}
+
+/* ── TIPS ── */
+.tips-grid{max-width:900px;margin:0 auto;padding:0 20px 80px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.tip-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
+.tip-icon{font-size:28px;margin-bottom:10px}
+.tip-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.tip-text{font-size:13px;color:var(--muted);line-height:1.6}
+
+footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">🎬 Video Walkthrough</div>
+  <h1>Ride<span>AI</span></h1>
+  <p>A complete guided walkthrough of the voice-powered agentic ride booking app — scene by scene with narration script.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="startPlayer()">▶ Play Walkthrough</button>
+    <button class="btn-outline" onclick="document.getElementById('script').scrollIntoView({behavior:'smooth'})">📄 View Script</button>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div class="player-wrap">
+  <div class="player">
+
+    <!-- Screen -->
+    <div class="player-screen" onclick="togglePlay()">
+
+      <!-- Scene 0: Intro -->
+      <div class="scene active" id="scene0" style="background:linear-gradient(135deg,#0f0f13,#1a1a2e)">
+        <div style="text-align:center">
+          <div style="font-size:14px;color:var(--accent);letter-spacing:2px;margin-bottom:16px">PRODUCT DEMO</div>
+          <div style="font-size:72px;font-weight:800;color:white;line-height:1">Ride<span style="color:var(--accent)">AI</span></div>
+          <div style="font-size:22px;color:var(--muted);margin-top:12px">Voice-Powered Agentic Ride Booking</div>
+          <div style="margin-top:30px;font-size:16px;color:var(--accent)">▶ Click to begin</div>
+        </div>
+      </div>
+
+      <!-- Scene 1: The Problem -->
+      <div class="scene" id="scene1" style="background:#0f0f13;flex-direction:row;gap:40px;align-items:center">
+        <div class="scene-info">
+          <div class="scene-num">Scene 01</div>
+          <div class="scene-title">The Problem</div>
+          <div class="scene-desc">Traditional ride apps force users through 4–6 screens of tapping and typing. In the real world, people are on the move.</div>
+          <div class="scene-quote">23% of ride bookings are abandoned mid-flow — the UI creates too much friction.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+          <div style="font-size:48px">😤</div>
+          <div style="background:var(--surface2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--muted);text-align:center;max-width:160px">Tap screen → Type address → Choose vehicle → Wait → Confirm</div>
+          <div style="color:var(--accent2);font-size:13px;font-weight:700">4–6 steps just to book a ride</div>
+        </div>
+      </div>
+
+      <!-- Scene 2: The Solution -->
+      <div class="scene" id="scene2" style="background:#0f0f13;flex-direction:column;gap:20px">
+        <div class="scene-num" style="text-align:center;color:var(--accent)">Scene 02</div>
+        <div class="scene-title" style="text-align:center;font-size:32px">The Solution</div>
+        <div style="background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);border-radius:14px;padding:20px 28px;max-width:600px;text-align:center">
+          <div style="font-size:14px;color:var(--muted);margin-bottom:8px">User says:</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent)">"Book me a ride to the airport — I have two bags"</div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
+          <div style="background:var(--surface2);border-radius:10px;padding:10px 16px;font-size:13px;text-align:center">📍 Destination<br><span style="color:var(--green);font-weight:700">Airport</span></div>
+          <div style="background:var(--surface2);border-radius:10px;padding:10px 16px;font-size:13px;text-align:center">🚐 Vehicle<br><span style="color:var(--green);font-weight:700">SUV XL</span></div>
+          <div style="background:var(--surface2);border-radius:10px;padding:10px 16px;font-size:13px;text-align:center">🤖 Booked<br><span style="color:var(--green);font-weight:700">Automatically</span></div>
+        </div>
+        <div style="color:var(--green);font-weight:700;font-size:16px">Zero taps. Zero typing. One sentence.</div>
+      </div>
+
+      <!-- Scene 3: Home Screen -->
+      <div class="scene" id="scene3" style="background:#0f0f13;flex-direction:row;gap:40px;align-items:center">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="phone-screen">
+              <div style="font-size:14px;font-weight:800;color:white;align-self:flex-start">Ride<span style="color:var(--accent)">AI</span></div>
+              <div style="font-size:11px;color:var(--muted);align-self:flex-start;margin-bottom:4px">Good morning 👋</div>
+              <div class="pai-bubble">Welcome! Where would you like to go today?</div>
+              <div class="pmic">🎙️</div>
+              <div style="font-size:10px;color:var(--muted)">Tap to speak</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">
+                <div style="background:var(--surface2);border-radius:999px;padding:3px 8px;font-size:9px;color:var(--text)">✈️ Airport</div>
+                <div style="background:var(--surface2);border-radius:999px;padding:3px 8px;font-size:9px;color:var(--text)">🛍️ Mall</div>
+                <div style="background:var(--surface2);border-radius:999px;padding:3px 8px;font-size:9px;color:var(--text)">💼 Office</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-info">
+          <div class="scene-num">Scene 03</div>
+          <div class="scene-title">Home Screen</div>
+          <div class="scene-desc">The app opens with a large mic button and an AI greeting. Users can tap the mic to speak or choose a quick command chip.</div>
+          <div class="scene-quote">"The mic button is the entire booking flow in one tap."</div>
+        </div>
+      </div>
+
+      <!-- Scene 4: Voice Command -->
+      <div class="scene" id="scene4" style="background:#0f0f13;flex-direction:row;gap:40px;align-items:center">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="phone-screen">
+              <div style="width:70px;height:70px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:28px;animation:micPulse 0.8s infinite">🎙️</div>
+              <div style="font-size:11px;color:var(--accent2);font-weight:700;animation:blink 1s infinite">🔴 Listening…</div>
+              <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:10px;color:var(--accent);font-style:italic;text-align:center;max-width:160px">"Book me a ride to the airport"</div>
+              <div class="pai-bubble">Great! Destination set to Airport. Finding rides…</div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-info">
+          <div class="scene-num">Scene 04</div>
+          <div class="scene-title">Voice Command</div>
+          <div class="scene-desc">The mic pulses red while listening. The AI parses the spoken command, extracts intent and entities, then responds with a confirmation in real time.</div>
+          <div class="scene-quote">"Destination set to Airport. Finding available rides…"</div>
+        </div>
+      </div>
+
+      <!-- Scene 5: Vehicle Selection -->
+      <div class="scene" id="scene5" style="background:#0f0f13;flex-direction:row;gap:40px;align-items:center">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="phone-screen">
+              <div style="font-size:11px;font-weight:700;color:white;align-self:flex-start">Choose Ride</div>
+              <div class="pvehicle"><span style="font-size:18px">🚗</span><div><div style="font-size:10px;font-weight:700">RideGo</div><div style="font-size:9px;color:var(--muted)">3 min · $8.50</div></div></div>
+              <div style="width:100%;background:var(--surface2);border-radius:10px;padding:8px;display:flex;align-items:center;gap:8px;font-size:11px"><span style="font-size:18px">🚙</span><div><div style="font-size:10px;font-weight:700;color:var(--muted)">Comfort</div><div style="font-size:9px;color:var(--muted)">5 min · $12.00</div></div></div>
+              <div style="width:100%;background:var(--surface2);border-radius:10px;padding:8px;display:flex;align-items:center;gap:8px;font-size:11px"><span style="font-size:18px">🚐</span><div><div style="font-size:10px;font-weight:700;color:var(--muted)">SUV XL</div><div style="font-size:9px;color:var(--muted)">7 min · $18.50</div></div></div>
+              <div style="width:100%;background:var(--accent);border-radius:8px;padding:6px;font-size:10px;font-weight:700;color:white;text-align:center">Confirm →</div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-info">
+          <div class="scene-num">Scene 05</div>
+          <div class="scene-title">Vehicle Selection</div>
+          <div class="scene-desc">Three ride options with live fare breakdown. The AI pre-selects the best match based on context — if you said "bags", it highlights the SUV.</div>
+          <div class="scene-quote">"The AI recommends RideGo — 3 min away, $8.50. Shall I confirm?"</div>
+        </div>
+      </div>
+
+      <!-- Scene 6: AI Matching -->
+      <div class="scene" id="scene6" style="background:#0f0f13;flex-direction:row;gap:40px;align-items:center">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="phone-screen">
+              <div style="font-size:11px;font-weight:700;color:white">Finding Driver</div>
+              <div style="width:60px;height:60px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin 1s linear infinite;display:flex;align-items:center;justify-content:center;font-size:20px">🚗</div>
+              <div style="display:flex;flex-direction:column;gap:4px;width:100%">
+                <div class="pstep"><div class="pdot"></div><span style="font-size:9px">Scanning 24 drivers…</span></div>
+                <div class="pstep"><div class="pdot"></div><span style="font-size:9px">Filtering by rating ≥ 4.5…</span></div>
+                <div class="pstep"><div class="pdot" style="background:var(--border)"></div><span style="font-size:9px;color:var(--muted)">Calculating ETA…</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-info">
+          <div class="scene-num">Scene 06</div>
+          <div class="scene-title">AI Driver Matching</div>
+          <div class="scene-desc">The AI matching agent visibly works through its decision process — scanning, filtering, scoring — in real time. Full transparency into how the driver was chosen.</div>
+          <div class="scene-quote">"Analysing 24 nearby drivers… filtering by rating… calculating on-time probability…"</div>
+        </div>
+      </div>
+
+      <!-- Scene 7: Driver Revealed -->
+      <div class="scene" id="scene7" style="background:#0f0f13;flex-direction:row;gap:40px;align-items:center">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="phone-screen">
+              <div style="font-size:11px;font-weight:700;color:var(--green)">Driver Found! 🎉</div>
+              <div class="pdriver">
+                <div style="width:36px;height:36px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px">👨</div>
+                <div><div style="font-size:11px;font-weight:700">Rahul Sharma</div><div style="font-size:9px;color:var(--yellow)">⭐ 4.92</div></div>
+                <div class="peta">4<br><span style="font-size:9px;font-weight:400">min</span></div>
+              </div>
+              <div style="background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);border-radius:8px;padding:8px;font-size:9px;color:var(--muted);width:100%">🤖 Why Rahul? Proximity: 0.8km · Rating: 4.92 · On-time: 97%</div>
+              <div style="width:100%;background:var(--accent);border-radius:8px;padding:7px;font-size:10px;font-weight:700;color:white;text-align:center">✅ Accept Ride</div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-info">
+          <div class="scene-num">Scene 07</div>
+          <div class="scene-title">Driver Revealed</div>
+          <div class="scene-desc">The best driver is revealed with full context — name, rating, ETA — and an AI explanation of why they were chosen. Transparent, trustworthy AI.</div>
+          <div class="scene-quote">"Found your driver — Rahul Sharma, rated 4.92 stars, arriving in 4 minutes. 97% on-time probability."</div>
+        </div>
+      </div>
+
+      <!-- Scene 8: Live Tracking -->
+      <div class="scene" id="scene8" style="background:#0f0f13;flex-direction:row;gap:40px;align-items:center">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="phone-screen">
+              <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+                <div style="font-size:11px;font-weight:700">Live Tracking</div>
+                <div class="peta" style="padding:4px 8px;font-size:16px">3:42</div>
+              </div>
+              <div style="background:var(--surface2);border-radius:8px;padding:6px 10px;font-size:10px;width:100%;color:var(--accent)">🚗 Driver en route to you</div>
+              <div class="pmap"><div class="pmap-car">🚗</div></div>
+              <div class="pdriver" style="scale:0.9">
+                <div style="width:30px;height:30px;border-radius:15px;background:var(--accent);display:flex;align-items:center;justify-content:center">👨</div>
+                <div style="font-size:9px"><div style="font-weight:700">Rahul Sharma</div><div style="color:var(--muted)">KA-05-MN-3421</div></div>
+              </div>
+              <div style="display:flex;gap:6px;width:100%">
+                <div style="flex:1;background:var(--surface2);border-radius:6px;padding:5px;font-size:9px;text-align:center">📞 Call</div>
+                <div style="flex:1;background:var(--surface2);border-radius:6px;padding:5px;font-size:9px;text-align:center">🔗 Share</div>
+                <div style="flex:1;background:rgba(255,101,132,.15);border:1px solid var(--accent2);border-radius:6px;padding:5px;font-size:9px;text-align:center;color:var(--accent2)">🆘 SOS</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-info">
+          <div class="scene-num">Scene 08</div>
+          <div class="scene-title">Live Tracking</div>
+          <div class="scene-desc">Real-time ETA countdown, animated map, driver details. The AI narrates each phase — arrival, ride start, approaching destination. SOS and Share Trip always visible.</div>
+          <div class="scene-quote">"Your driver is 3 minutes away. I'll let you know when Rahul arrives."</div>
+        </div>
+      </div>
+
+      <!-- Scene 9: Rating -->
+      <div class="scene" id="scene9" style="background:#0f0f13;flex-direction:column;gap:16px;align-items:center">
+        <div class="scene-num" style="color:var(--accent)">Scene 09</div>
+        <div style="font-size:60px">⭐</div>
+        <div class="scene-title" style="text-align:center">You've Arrived!</div>
+        <div style="font-size:16px;color:var(--muted);text-align:center;max-width:400px">The AI confirms arrival and prompts a star rating. One tap submits — no forms, no typing.</div>
+        <div class="prating">
+          <span style="color:var(--yellow)">★</span><span style="color:var(--yellow)">★</span><span style="color:var(--yellow)">★</span><span style="color:var(--yellow)">★</span><span style="color:var(--yellow)">★</span>
+        </div>
+        <div style="background:var(--accent);border-radius:12px;padding:12px 28px;font-size:15px;font-weight:700;color:white">Submit Rating</div>
+      </div>
+
+      <!-- Scene 10: CTA -->
+      <div class="scene" id="scene10" style="background:linear-gradient(135deg,#0f0f13,#1a1a2e);flex-direction:column;gap:16px;text-align:center">
+        <div style="font-size:48px;font-weight:800;color:white">Ride<span style="color:var(--accent)">AI</span></div>
+        <div style="font-size:20px;color:var(--muted)">Voice-Powered. Agentic. Human-First.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;background:var(--surface2);border-radius:14px;padding:20px 28px;max-width:420px">
+          <div style="font-size:14px;color:var(--text)">🔗 <strong>GitHub:</strong> github.com/nayyar2112-de/rideai</div>
+          <div style="font-size:14px;color:var(--text)">📱 <strong>Try it:</strong> snack.expo.dev → paste SnackApp.js</div>
+          <div style="font-size:14px;color:var(--text)">📧 <strong>Contact:</strong> team@rideai.io</div>
+        </div>
+        <div style="color:var(--accent);font-size:16px;font-weight:700">Thank you! Questions?</div>
+      </div>
+
+    </div><!-- /player-screen -->
+
+    <!-- Progress -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevScene()">⏮</button>
+      <button class="ctrl-btn play-pause" id="playBtn" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" onclick="nextScene()">⏭</button>
+      <span class="time-display" id="timeDisplay">0:00 / 2:30</span>
+      <span class="scene-counter" id="sceneCounter">Scene 1 of 11</span>
+    </div>
+
+    <!-- Scene dots -->
+    <div class="scene-dots" id="sceneDots"></div>
+
+  </div><!-- /player -->
+</div><!-- /player-wrap -->
+
+<!-- SCRIPT SECTION -->
+<div class="script-section" id="script">
+  <div class="section-title">🎙️ Presenter Script</div>
+
+  <div id="scriptCards"></div>
+</div>
+
+<!-- TIPS -->
+<div style="max-width:900px;margin:0 auto;padding:0 20px 20px">
+  <div class="section-title">💡 Presentation Tips</div>
+</div>
+<div class="tips-grid">
+  <div class="tip-card">
+    <div class="tip-icon">🎙️</div>
+    <div class="tip-title">Lead with the voice demo</div>
+    <div class="tip-text">Open by saying "Watch what happens when I just speak" — then trigger a voice command. Let the audience see the AI respond before explaining anything.</div>
+  </div>
+  <div class="tip-card">
+    <div class="tip-icon">📱</div>
+    <div class="tip-title">Use Expo Snack live</div>
+    <div class="tip-text">Open snack.expo.dev on a second screen or tablet. Paste SnackApp.js and show it running in real time. Audience can scan the QR code on their phones.</div>
+  </div>
+  <div class="tip-card">
+    <div class="tip-icon">🤖</div>
+    <div class="tip-title">Emphasise AI transparency</div>
+    <div class="tip-text">The matching screen showing "Why Rahul?" is a key differentiator. Pause on it. Explain that this is what agentic AI looks like — not a black box.</div>
+  </div>
+  <div class="tip-card">
+    <div class="tip-icon">📊</div>
+    <div class="tip-title">Hit the 23% stat hard</div>
+    <div class="tip-text">The booking abandonment rate is your killer stat. Open with it, close with it. It makes the problem real and the solution measurable.</div>
+  </div>
+  <div class="tip-card">
+    <div class="tip-icon">♿</div>
+    <div class="tip-title">Mention accessibility</div>
+    <div class="tip-text">Voice-first design is an accessibility superpower. Mention visually-impaired users, elderly users, users with motor impairments. It broadens the market story.</div>
+  </div>
+  <div class="tip-card">
+    <div class="tip-icon">🚀</div>
+    <div class="tip-title">End with the GitHub link</div>
+    <div class="tip-text">The code is live on GitHub right now. Saying "you can clone and run this today" gives your demo instant credibility. It's not a mockup — it's real.</div>
+  </div>
+</div>
+
+<footer>
+  Made with IBM Bob &nbsp;·&nbsp; Ride AI Walkthrough &nbsp;·&nbsp; github.com/nayyar2112-de/rideai
+</footer>
+
+<style>@keyframes spin{to{transform:rotate(360deg)}} @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}</style>
+
+<script>
+const SCENES = [
+  { id:'scene0',  title:'Intro',             duration:15, script:'Open with the title card. Let it sit for 2 seconds before speaking. Build anticipation.' },
+  { id:'scene1',  title:'The Problem',       duration:20, script:'The problem with today\'s ride apps is simple — they\'re built for touchscreens, not for real life. Industry data shows that 23% of ride bookings are abandoned mid-flow. That\'s nearly 1 in 4 users giving up. The root cause? Too many screens, too much typing, too much friction.' },
+  { id:'scene2',  title:'The Solution',      duration:20, script:'Our solution is Ride AI. Instead of tapping through screens, users just speak. "Book me a ride to the airport — I have two bags." That one sentence tells the AI everything it needs. Destination, vehicle type, context. The AI does the rest — zero taps, zero typing.' },
+  { id:'scene3',  title:'Home Screen',       duration:18, script:'The app opens with a single large mic button and a greeting from the AI assistant. Notice the quick command chips at the bottom — Airport, Office, Mall. Users can tap these for instant voice shortcuts. The AI greets you by name and asks where you want to go.' },
+  { id:'scene4',  title:'Voice Command',     duration:18, script:'When the user taps the mic, it pulses red — the AI is listening. The user says: "Book me a ride to the airport." Watch the AI parse this in real time — it understands the destination and responds: "Great! Destination set to Airport. Finding available rides."' },
+  { id:'scene5',  title:'Vehicle Selection', duration:18, script:'The app presents three ride options — RideGo for economy, Comfort for premium, and SUV XL when you have luggage. The AI pre-selects the best match. Notice the live fare breakdown below — base fare, distance, and demand pricing are all shown transparently.' },
+  { id:'scene6',  title:'AI Matching',       duration:20, script:'This is where the agentic AI really shines. Rather than just picking any nearby driver, the AI runs through its decision process — visibly. It scans 24 drivers, filters by rating above 4.5, checks route familiarity, calculates ETA accuracy. You can see it thinking.' },
+  { id:'scene7',  title:'Driver Revealed',   duration:18, script:'The driver is revealed — Rahul Sharma, rated 4.92 stars, arriving in 4 minutes. But crucially, the app also shows *why* Rahul was chosen. Proximity 0.8km, rating 4.92, on-time probability 97%. This is transparent AI — not a black box.' },
+  { id:'scene8',  title:'Live Tracking',     duration:20, script:'Once the ride is confirmed, the tracking screen shows a live ETA countdown, an animated map, and the driver\'s details. The AI narrates each phase unprompted — "Your driver is 3 minutes away." SOS and Share Trip buttons are always visible for safety.' },
+  { id:'scene9',  title:'Rating Screen',     duration:12, script:'When you arrive, the AI announces it and immediately prompts a star rating. One tap. No forms. The experience is complete in seconds. Rahul gets his rating, the data improves the matching model, and the cycle continues.' },
+  { id:'scene10', title:'Call to Action',    duration:15, script:'That\'s Ride AI — voice-powered, agentic, human-first. The full source code is live on GitHub right now at github.com/nayyar2112-de/rideai. You can try it instantly at snack.expo.dev by pasting SnackApp.js. Any questions?' },
+];
+
+let current = 0;
+let playing = false;
+let timer = null;
+let elapsed = 0;
+const totalDuration = SCENES.reduce((s,sc) => s + sc.duration, 0);
+
+// Build dots
+const dotsEl = document.getElementById('sceneDots');
+SCENES.forEach((sc, i) => {
+  const d = document.createElement('div');
+  d.className = 'scene-dot' + (i===0?' active':'');
+  d.title = sc.title;
+  d.onclick = () => goToScene(i);
+  dotsEl.appendChild(d);
+});
+
+// Build script cards
+const scriptEl = document.getElementById('scriptCards');
+SCENES.forEach((sc, i) => {
+  if(i===0) return;
+  scriptEl.innerHTML += `
+    <div class="script-card">
+      <div class="script-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <div class="script-num">${String(i).padStart(2,'0')}</div>
+        <div class="script-stitle">${sc.title}</div>
+        <div class="script-dur">${sc.duration}s</div>
+        <span style="color:var(--muted);margin-left:8px">▾</span>
+      </div>
+      <div class="script-body" style="display:none">
+        <div class="narration">${sc.script}</div>
+      </div>
+    </div>`;
+});
+
+function goToScene(idx) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.getElementById(SCENES[idx].id).classList.add('active');
+  document.querySelectorAll('.scene-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  document.getElementById('sceneCounter').textContent = `Scene ${idx+1} of ${SCENES.length}`;
+  current = idx;
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = (current / (SCENES.length-1)) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  const passed = SCENES.slice(0, current).reduce((s,sc) => s+sc.duration, 0);
+  const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  document.getElementById('timeDisplay').textContent = `${fmt(passed)} / ${fmt(totalDuration)}`;
+}
+
+function nextScene() {
+  if(current < SCENES.length-1) goToScene(current+1);
+  else { playing=false; clearInterval(timer); document.getElementById('playBtn').textContent='▶'; }
+}
+function prevScene() { if(current>0) goToScene(current-1); }
+
+function startPlayer() {
+  document.querySelector('.player-wrap').scrollIntoView({behavior:'smooth'});
+  setTimeout(() => { playing=false; togglePlay(); }, 400);
+}
+
+function togglePlay() {
+  playing = !playing;
+  document.getElementById('playBtn').textContent = playing ? '⏸' : '▶';
+  if(playing) {
+    let sceneElapsed = 0;
+    timer = setInterval(() => {
+      sceneElapsed++;
+      if(sceneElapsed >= SCENES[current].duration) {
+        sceneElapsed = 0;
+        nextScene();
+        if(!playing) clearInterval(timer);
+      }
+    }, 1000);
+  } else {
+    clearInterval(timer);
+  }
+}
+
+updateProgress();
+</script>
+</body>
+</html>
